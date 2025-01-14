@@ -64,9 +64,9 @@ def process_training_data(perform_train_test_split, cat_features):
 @pytest.fixture
 def process_test_data(perform_train_test_split, cat_features, process_training_data):
     """Process Test Data and return it."""
-    _, test = perform_train_test_split
-    _, _, encoder, lb = process_training_data
-    X_test, y_test = process_data(
+    _,test = perform_train_test_split
+    _,_,encoder,lb = process_training_data
+    X_test, y_test,_,_ = process_data(
         test,
         categorical_features=cat_features,
         label="salary",
@@ -113,7 +113,7 @@ def test_compute_model_metrics():
 def test_inference(trained_model, process_test_data):
     """Test the `inference` function."""
     model = trained_model
-    X_test, _ = process_test_data
+    X_test, y_test = process_test_data
     preds = inference(model, X_test)
     assert len(preds) == len(X_test), "Inference output does not match input size."
     assert all(isinstance(p, (np.integer, int)) for p in preds), "Inference output contains non-integer values."
