@@ -1,14 +1,18 @@
-from sklearn.metrics import fbeta_score, precision_score, recall_score, f1_score
+from sklearn.metrics import (
+    fbeta_score,
+    precision_score,
+    recall_score,
+    f1_score
+)
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import GridSearchCV
 
 import pandas as pd
-import numpy as np
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
+
 
 # Optional: implement hyperparameter tuning.
 def train_model(X_train, y_train):
@@ -26,14 +30,14 @@ def train_model(X_train, y_train):
     model
         Trained machine learning model.
     """
-    ## Initialize the Random Forest Classifier
+    # Initialize the Random Forest Classifier
     model = RandomForestClassifier(random_state=42)
     param_grid = {
         'n_estimators': [50, 100, 200],
         'max_depth': [10, 20, None],
         'min_samples_split': [2, 5, 10],
     }
-    ## Set up hyperparameter tuning with GridSearchCV (optional)
+    # Set up hyperparameter tuning with GridSearchCV (optional)
     grid_search = GridSearchCV(
         estimator=model,
         param_grid=param_grid,
@@ -41,16 +45,16 @@ def train_model(X_train, y_train):
         scoring='f1_weighted',  # Handles multiclass by weighting each class
         n_jobs=-1
     )
-    ## Fit the model on training data
+    # Fit the model on training data
     grid_search.fit(X_train, y_train)
     logger.info(f"Best Model Parameters: {grid_search.best_params_}")
-    ## Return best model from grid search
+    # Return best model from grid search
     return grid_search.best_estimator_
 
 
 def compute_model_metrics(y, preds):
     """
-    Validates the trained machine learning model using precision, recall, and F1.
+    Validates the machine learning model using precision, recall, and F1.
 
     Inputs
     ------
@@ -85,12 +89,13 @@ def inference(model, X):
         Predictions from the model.
     """
     preds = model.predict(X)
-
     return preds
+
 
 def compute_performance_on_slices(df, feature, y_test, preds):
     """
-    Compute performance metrics for slices of data based on a categorical feature.
+    Compute performance metrics for slices of data based
+    on a categorical feature.
 
     Parameters
     ----------
@@ -121,8 +126,8 @@ def compute_performance_on_slices(df, feature, y_test, preds):
         {
             "slice_value": value,
             "n_samples": len(y_test[(mask := (df[feature] == value))]),
-            "precision": (precision := precision_score(y_test[mask], preds[mask], zero_division=0)),
-            "recall": (recall := recall_score(y_test[mask], preds[mask], zero_division=0)),
+            "precision": precision_score(y_test[mask], preds[mask], zero_division=0),
+            "recall": recall_score(y_test[mask], preds[mask], zero_division=0),
             "fbeta": f1_score(y_test[mask], preds[mask], zero_division=0),
         }
         for value in df[feature].unique()

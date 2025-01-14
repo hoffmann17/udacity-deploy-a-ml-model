@@ -8,7 +8,6 @@ import logging
 from model import train_model, compute_model_metrics, inference, compute_performance_on_slices
 from data import process_data
 
-
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
 
@@ -19,9 +18,9 @@ slice_path = "./slice_output.csv"
 
 # Add code to load in the data.
 data = pd.read_csv(data_path)
-data.columns = data.columns.str.strip()  # Clean column names otherwise pandas would add an empty space infront of the column name causing errors
+data.columns = data.columns.str.strip()  # Clean column names to avoid errors
 
-# Optional enhancement, use K-fold cross validation instead of a train-test split.
+# Optional enhancement, use K-fold cross-validation instead of a train-test split.
 train, test = train_test_split(data, test_size=0.20)
 
 cat_features = [
@@ -38,34 +37,34 @@ cat_features = [
 # Process the training data with the process_data function
 logger.info("Process Training data")
 X_train, y_train, encoder, lb = process_data(
-    train, 
-    categorical_features=cat_features, 
-    label="salary", 
-    training=True
+    train,
+    categorical_features=cat_features,
+    label="salary",
+    training=True,
 )
 
 # Process the test data with the process_data function.
 logger.info("Process Test data")
 X_test, y_test, encoder, lb = process_data(
-    test, 
-    categorical_features=cat_features, 
-    label="salary", 
-    training=False, 
-    encoder=encoder, 
-    lb=lb
+    test,
+    categorical_features=cat_features,
+    label="salary",
+    training=False,
+    encoder=encoder,
+    lb=lb,
 )
 
 # Train and save a model.
 
-## Train the model
+# Train the model
 model = train_model(X_train, y_train)
 
-## Test the model
+# Test the model
 preds = inference(model, X_test)
 
 logger.info(preds)
 
-## Get Model Performance
+# Get Model Performance
 precision, recall, fbeta = compute_model_metrics(y_test, preds)
 
 logger.info(f"Model Performance: Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {fbeta:.4f}")
@@ -77,6 +76,6 @@ joblib.dump(lb, f"{model_path}/label_binarizer.joblib")
 
 for feature in cat_features:
     df_performance = compute_performance_on_slices(test, feature, y_test, preds)
-    df_performance.to_csv(slice_path,  mode='a', index=False)
+    df_performance.to_csv(slice_path, mode='a', index=False)
     logging.info(f"Performance on slice {feature}")
     logging.info(df_performance)

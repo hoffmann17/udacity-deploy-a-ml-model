@@ -1,22 +1,24 @@
-import pytest
+"""
+Unit tests for FastAPI endpoints
+"""
+
 from fastapi.testclient import TestClient
-from main import app  # Assuming your FastAPI app is in a file named `app.py`
+from main import app  # Assuming your FastAPI app is in a file named `main.py`
 
 client = TestClient(app)
 
+
 # Test GET endpoint
 def test_get():
+    """Test the GET endpoint."""
     response = client.get("/")
-    
-    # Assert status code is 200
-    assert response.status_code == 200
-    
-    # Assert response content
-    assert response.json() == {"message": "Welcome to the Income Prediction API!"}
+    assert response.status_code == 200, "Expected status code 200."
+    assert response.json() == {"message": "Welcome to the Income Prediction API!"}, "Unexpected response content."
+
 
 # Test POST request for `>50K` inference
 def test_post_above_50K():
-    # Define input data that would likely result in '>50K' prediction
+    """Test POST request with input data predicting '>50K'."""
     input_data = {
         "age": 51,
         "workclass": "private",
@@ -31,20 +33,17 @@ def test_post_above_50K():
         "capital_gain": 15024,
         "capital_loss": 0,
         "hours_per_week": 60,
-        "native_country": "Iran"
+        "native_country": "Iran",
     }
 
     response = client.post("/predict", json=input_data)
-    
-    # Assert status code is 200
-    assert response.status_code == 200
-    
-    # Assert that the prediction is '>50K'
-    assert response.json()['salary'] == '>50K'
+    assert response.status_code == 200, "Expected status code 200."
+    assert response.json()["salary"] == ">50K", "Expected prediction to be '>50K'."
+
 
 # Test POST request for `<=50K` inference
 def test_post_below_50K():
-    # Define input data that would likely result in '<=50K' prediction
+    """Test POST request with input data predicting '<=50K'."""
     input_data = {
         "age": 25,
         "workclass": "Private",
@@ -59,13 +58,9 @@ def test_post_below_50K():
         "capital_gain": 0,
         "capital_loss": 0,
         "hours_per_week": 40,
-        "native_country": "United-States"
+        "native_country": "United-States",
     }
 
     response = client.post("/predict", json=input_data)
-    
-    # Assert status code is 200
-    assert response.status_code == 200
-    
-    # Assert that the prediction is '<=50K'
-    assert response.json()['salary'] == '<=50K'
+    assert response.status_code == 200, "Expected status code 200."
+    assert response.json()["salary"] == "<=50K", "Expected prediction to be '<=50K'."

@@ -1,14 +1,6 @@
-"""
-Author: Alexander Hoffmann
-Date: Jan. 2025
-
-Script:
-"""
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List
 import joblib
-import numpy as np
 import pandas as pd
 
 from ml.logger import logger
@@ -25,6 +17,7 @@ lb = joblib.load(label_binarizer_path)
 
 # FastAPI instance
 app = FastAPI()
+
 
 # Define the Pydantic model for input data
 class InferenceInput(BaseModel):
@@ -63,51 +56,36 @@ class InferenceInput(BaseModel):
             }
         }
 
+
 # Define the POST request output schema
 class InferenceOutput(BaseModel):
     income: str
+
 
 @app.get("/")
 def root():
     return {"message": "Welcome to the Income Prediction API!"}
 
+
 @app.post("/predict")
 def predict(data: InferenceInput):
     try:
-       ## Prepare input data
-       #input_data = np.array([[
-       #    data.workclass,
-       #    data.education,
-       #    data.marital_status,
-       #    data.occupation,
-       #    data.relationship,
-       #    data.race,
-       #    data.sex,
-       #    data.native_country,
-       #    data.age,
-       #    data.education_num,
-       #    data.capital_gain,
-       #    data.capital_loss,
-       #    data.hours_per_week
-       #]])
-
-        input_data = {  
-                'age': data.age,
-                'workclass': data.workclass, 
-                'fnlgt': data.fnlgt,
-                'education': data.education,
-                'education-num': data.education_num,
-                'marital-status': data.marital_status,
-                'occupation': data.occupation,
-                'relationship': data.relationship,
-                'race': data.race,
-                'sex': data.sex,
-                'capital-gain': data.capital_gain,
-                'capital-loss': data.capital_loss,
-                'hours-per-week': data.hours_per_week,
-                'native-country': data.native_country,
-                }
-
+        input_data = {
+            'age': data.age,
+            'workclass': data.workclass,
+            'fnlgt': data.fnlgt,
+            'education': data.education,
+            'education-num': data.education_num,
+            'marital-status': data.marital_status,
+            'occupation': data.occupation,
+            'relationship': data.relationship,
+            'race': data.race,
+            'sex': data.sex,
+            'capital-gain': data.capital_gain,
+            'capital-loss': data.capital_loss,
+            'hours-per-week': data.hours_per_week,
+            'native-country': data.native_country,
+        }
 
         df = pd.DataFrame(input_data, index=[0])
 
@@ -124,20 +102,19 @@ def predict(data: InferenceInput):
 
         # Process the Input Dataframe with the process_data function
         X_sample, _, _, _ = process_data(
-            df, 
+            df,
             categorical_features=cat_features,
-            training=False, 
-            encoder=encoder, 
+            training=False,
+            encoder=encoder,
             lb=lb
         )
 
         # Make predictions
         prediction = model.predict(X_sample)
-        
-        #logger.info(f"Prediction: {prediction}, Input Data: {input_data}")
+
         logger.info(f"Prediction: {prediction[0]}, Input Data: {input_data}")
 
-       # convert prediction to label and add to data output
+        # Convert prediction to label and add to data output
         if prediction[0] > 0.5:
             salary = '>50K'
         else:
@@ -145,7 +122,7 @@ def predict(data: InferenceInput):
 
         input_data['salary'] = salary
         return input_data
-    
+
     except Exception as e:
         logger.error(f"Error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
