@@ -56,12 +56,6 @@ class InferenceInput(BaseModel):
             }
         }
 
-
-# Define the POST request output schema
-class InferenceOutput(BaseModel):
-    income: str
-
-
 @app.get("/")
 def root():
     return {"message": "Welcome to the Income Prediction API!"}
